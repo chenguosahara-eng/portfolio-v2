@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>南航翔翼 · 排班调度系统重新设计 — Reese G Chen</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --bg-elevated: #111114;
+    --border: #202024;
+    --border-soft: #1a1a1e;
+    --text-primary: #f2f2ef;
+    --text-secondary: #9a9aa2;
+    --text-tertiary: #58585e;
+    --accent: #4a92ff;
+    --accent-soft: rgba(74, 146, 255, 0.14);
+    --font-display: 'Manrope', 'Noto Sans SC', sans-serif;
+    --font-body: 'Inter', 'Noto Sans SC', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .cn-inline {
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  /* ---------- Back link ---------- */
+
+  .back-link {
+    position: fixed;
+    top: 28px;
+    left: 88px;
+    z-index: 20;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .back-link:hover { color: var(--text-primary); }
+
+  /* ---------- Deck / scroll container ---------- */
+
+  .deck {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  .page {
+    height: 100vh;
+    width: 100%;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 88px 96px 56px 160px;
+    position: relative;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  @media (max-width: 860px) {
+    .page { padding: 76px 20px 48px 64px; }
+  }
+
+  .slide-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    width: 100%;
+    max-width: 1400px;
+  }
+
+  .slide-label .slide-number {
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slide-label .slide-title {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .page-visual {
+    width: 100%;
+    max-width: 1400px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
+    flex-shrink: 1;
+    min-height: 0;
+  }
+
+  .page-visual img,
+  .page-visual video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #0a0a0c;
+  }
+
+  /* ---------- Text + media hybrid pages (8, 18) ---------- */
+
+  .slide-context {
+    width: 100%;
+    max-width: 1400px;
+    margin-bottom: 18px;
+  }
+
+  .context-badge {
+    display: inline-flex;
+    padding: 5px 14px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .context-lede {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .context-title {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .context-desc {
+    padding-left: 12px;
+    border-left: 2px solid var(--accent);
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 720px;
+  }
+
+  .callout-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .callout-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    max-width: 460px;
+  }
+
+  .callout-label.align-right {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .state-compare {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .state-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .state-tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .state-name {
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .state-desc {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    max-width: 280px;
+  }
+
+  .state-transition {
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.5;
+    text-align: center;
+    min-width: 160px;
+  }
+
+  .hybrid-visual {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hybrid-visual .crop-top {
+    width: 100%;
+    display: block;
+  }
+
+  .gif-stage {
+    background: #ebebeb;
+    padding: 0 7.8% 2.5%;
+  }
+
+  .gif-stage.s18 {
+    padding: 0 13.2% 2.5% 13.5%;
+  }
+
+  .gif-stage img {
+    width: 100%;
+    display: block;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  .page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(34px, 5vw, 58px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    max-width: 780px;
+  }
+
+  .page h2 {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    max-width: 720px;
+  }
+
+  .page .lede {
+    margin-top: 20px;
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    line-height: 1.75;
+  }
+
+  .page .body-text {
+    margin-top: 24px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    line-height: 1.8;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 40px;
+    margin-top: 44px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item .label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+
+  .meta-item .value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .placeholder-box {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 16 / 10;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    background: var(--bg-elevated);
+  }
+
+  .placeholder-box .icon {
+    width: 28px;
+    height: 28px;
+    opacity: 0.5;
+  }
+
+  .page-index {
+    position: absolute;
+    top: 40px;
+    right: 96px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cta-back {
+    margin-top: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 8px;
+    background: var(--text-primary);
+    color: #0a0a0c;
+    font-size: 14px;
+    font-weight: 600;
+    width: fit-content;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+
+  .cta-back:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+
+  /* ---------- Vertical page navigator ---------- */
+
+  .page-nav {
+    position: fixed;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .nav-arrow {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    transition: color 0.15s ease;
+  }
+
+  .nav-arrow:hover { color: var(--text-primary); }
+  .nav-arrow svg { width: 14px; height: 14px; }
+
+  .nav-dashes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 0;
+  }
+
+  .dash {
+    width: 18px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.22);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.25s ease;
+  }
+
+  .dash:hover { background: rgba(255, 255, 255, 0.45); }
+
+  .dash.active {
+    width: 28px;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  /* Spotlight: dim the other dashes while one is hovered/focused */
+  .nav-dashes:hover .dash:not(:hover):not(:focus-visible):not(.active) {
+    opacity: 0.3;
+    filter: blur(0.4px);
+  }
+
+  /* ---------- Page preview card ---------- */
+
+  .preview-card {
+    position: fixed;
+    left: 76px;
+    z-index: 40;
+    width: 220px;
+    padding: 16px 18px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.65);
+    opacity: 0;
+    transform: translateY(calc(-50% + 10px));
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+  }
+
+  .preview-card.visible {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+
+  .preview-card .pv-index {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  .preview-card .pv-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 6px;
+  }
+
+  .preview-card .pv-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  @media (max-width: 860px) {
+    .preview-card { display: none; }
+  }
+
+  /* ---------- Bottom counter ---------- */
+
+  .page-counter {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    z-index: 30;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .page-counter .current { color: var(--text-primary); font-weight: 600; }
+
+  /* ---------- Restart button ---------- */
+
+  .restart-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 32px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 10px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .restart-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
+  .restart-btn svg { width: 15px; height: 15px; }
+
+  .restart-btn .key {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 860px) {
+    .restart-btn .cn-inline { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .dash { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← 返回首页 <span class="cn-inline">Home</span></a>
+
+<nav class="page-nav" aria-label="Page navigation">
+  <button class="nav-arrow" id="navUp" aria-label="上一页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+  <div class="nav-dashes" id="navDashes">
+    <button class="dash" data-target="page-1" data-index="01" data-title="封面" data-desc="排班调度系统重新设计 · 项目介绍" aria-label="第 1 页:封面"></button>
+    <button class="dash" data-target="page-2" data-index="02" data-title="项目背景" data-desc="当前业务面临的挑战与流程图" aria-label="第 2 页:项目背景"></button>
+    <button class="dash" data-target="page-3" data-index="03" data-title="挑战一" data-desc="面对功能堆积的旧页面,如何重构布局" aria-label="第 3 页:挑战一"></button>
+    <button class="dash" data-target="page-4" data-index="04" data-title="原调度页面" data-desc="旧系统截图" aria-label="第 4 页:原调度页面"></button>
+    <button class="dash" data-target="page-5" data-index="05" data-title="主动发起用户调研" data-desc="调度月视图 / 周视图对比" aria-label="第 5 页:主动发起用户调研"></button>
+    <button class="dash" data-target="page-6" data-index="06" data-title="布局重构" data-desc="从机器为中心到任务为中心" aria-label="第 6 页:布局重构"></button>
+    <button class="dash" data-target="page-7" data-index="07" data-title="排班日历视图方案探索" data-desc="三个方案的取舍过程" aria-label="第 7 页:排班日历视图方案探索"></button>
+    <button class="dash" data-target="page-8" data-index="08" data-title="最终方案" data-desc="月视图周视图双状态切换" aria-label="第 8 页:最终方案"></button>
+    <button class="dash" data-target="page-9" data-index="09" data-title="挑战二" data-desc="系统数据这么多,我选择什么放出来" aria-label="第 9 页:挑战二"></button>
+    <button class="dash" data-target="page-10" data-index="10" data-title="模拟机资源展示方案探索" data-desc="两轮迭代与取舍" aria-label="第 10 页:模拟机资源展示方案探索"></button>
+    <button class="dash" data-target="page-11" data-index="11" data-title="竞品分析" data-desc="Google Map 与 AeroLOPA 的启发" aria-label="第 11 页:竞品分析"></button>
+    <button class="dash" data-target="page-12" data-index="12" data-title="月视图最终方案" data-desc="Tab 分类与进度条设计" aria-label="第 12 页:月视图最终方案"></button>
+    <button class="dash" data-target="page-13" data-index="13" data-title="机型筛选方案" data-desc="月视图周视图的模式切换" aria-label="第 13 页:机型筛选方案"></button>
+    <button class="dash" data-target="page-14" data-index="14" data-title="审批资源核查" data-desc="主视图展示对比结果" aria-label="第 14 页:审批资源核查"></button>
+    <button class="dash" data-target="page-15" data-index="15" data-title="挑战三" data-desc="信息量巨大,如何用交互匹配行为" aria-label="第 15 页:挑战三"></button>
+    <button class="dash" data-target="page-16" data-index="16" data-title="Hover 浮层快捷操作" data-desc="7 步操作压缩到 2 步" aria-label="第 16 页:Hover 浮层快捷操作"></button>
+    <button class="dash" data-target="page-17" data-index="17" data-title="周视图颜色编码" data-desc="拆分颜色语义,消除混合编码" aria-label="第 17 页:周视图颜色编码"></button>
+    <button class="dash" data-target="page-18" data-index="18" data-title="历史记录相互高亮" data-desc="替代颜色归属的交互方案" aria-label="第 18 页:历史记录相互高亮"></button>
+    <button class="dash" data-target="page-19" data-index="19" data-title="验证" data-desc="概念验证与可用性测试" aria-label="第 19 页:验证"></button>
+    <button class="dash" data-target="page-20" data-index="20" data-title="上线节奏" data-desc="P0 / P1 / P2 优先级规划" aria-label="第 20 页:上线节奏"></button>
+    <button class="dash" data-target="page-21" data-index="21" data-title="我学到的" data-desc="B端系统的取舍方法论" aria-label="第 21 页:我学到的"></button>
+  </div>
+    <button class="nav-arrow" id="navDown" aria-label="下一页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  </button>
+</nav>
+
+<div class="preview-card" id="previewCard" aria-hidden="true">
+  <div class="pv-index" id="pvIndex">01</div>
+  <div class="pv-title" id="pvTitle">封面</div>
+  <div class="pv-desc" id="pvDesc">项目名称、一句话简介与基本信息</div>
+</div>
+
+<div class="page-counter"><span class="current" id="counterCurrent">1</span> / 21</div>
+
+<button class="restart-btn" id="restartBtn" aria-label="回到第一页 Restart">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+  <span class="cn-inline" style="color: inherit;">回到开头</span>
+  <span class="key">R</span>
+</button>
+
+<div class="deck" id="deck">
+
+  <section class="page" id="page-1">
+    <div class="slide-label">
+      <span class="slide-number">01 / 21</span>
+      <span class="slide-title">封面</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/1.jpg" alt="南航翔翼项目 · 封面" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-2">
+    <div class="slide-label">
+      <span class="slide-number">02 / 21</span>
+      <span class="slide-title">项目背景</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/2.jpg" alt="南航翔翼项目 · 项目背景" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-3">
+    <div class="slide-label">
+      <span class="slide-number">03 / 21</span>
+      <span class="slide-title">挑战一</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/3.jpg" alt="南航翔翼项目 · 挑战一" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-4">
+    <div class="slide-label">
+      <span class="slide-number">04 / 21</span>
+      <span class="slide-title">原调度页面</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/4.jpg" alt="南航翔翼项目 · 原调度页面" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-5">
+    <div class="slide-label">
+      <span class="slide-number">05 / 21</span>
+      <span class="slide-title">主动发起用户调研</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/5.jpg" alt="南航翔翼项目 · 主动发起用户调研" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-6">
+    <div class="slide-label">
+      <span class="slide-number">06 / 21</span>
+      <span class="slide-title">布局重构</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/6.jpg" alt="南航翔翼项目 · 布局重构" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-7">
+    <div class="slide-label">
+      <span class="slide-number">07 / 21</span>
+      <span class="slide-title">排班日历视图方案探索</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/7.jpg" alt="南航翔翼项目 · 排班日历视图方案探索" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-8">
+    <div class="slide-label">
+      <span class="slide-number">08 / 21</span>
+      <span class="slide-title">最终方案</span>
+    </div>
+    <div class="page-visual">
+      <div class="hybrid-visual">
+        <img class="crop-top" src="images/nanhang/8-top.jpg" alt="南航翔翼项目 · 最终方案">
+        <div class="gif-stage">
+          <img src="images/nanhang/gifs/slide8-demo.gif" alt="最终方案动态演示">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-9">
+    <div class="slide-label">
+      <span class="slide-number">09 / 21</span>
+      <span class="slide-title">挑战二</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/9.jpg" alt="南航翔翼项目 · 挑战二" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-10">
+    <div class="slide-label">
+      <span class="slide-number">10 / 21</span>
+      <span class="slide-title">模拟机资源展示方案探索</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/10.jpg" alt="南航翔翼项目 · 模拟机资源展示方案探索" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-11">
+    <div class="slide-label">
+      <span class="slide-number">11 / 21</span>
+      <span class="slide-title">竞品分析</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/11.jpg" alt="南航翔翼项目 · 竞品分析" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-12">
+    <div class="slide-label">
+      <span class="slide-number">12 / 21</span>
+      <span class="slide-title">月视图最终方案</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/12.jpg" alt="南航翔翼项目 · 月视图最终方案" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-13">
+    <div class="slide-label">
+      <span class="slide-number">13 / 21</span>
+      <span class="slide-title">机型筛选方案</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/13.jpg" alt="南航翔翼项目 · 机型筛选方案" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-14">
+    <div class="slide-label">
+      <span class="slide-number">14 / 21</span>
+      <span class="slide-title">审批资源核查</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/14.jpg" alt="南航翔翼项目 · 审批资源核查" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-15">
+    <div class="slide-label">
+      <span class="slide-number">15 / 21</span>
+      <span class="slide-title">挑战三</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/15.jpg" alt="南航翔翼项目 · 挑战三" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-16">
+    <div class="slide-label">
+      <span class="slide-number">16 / 21</span>
+      <span class="slide-title">Hover 浮层快捷操作</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/16.jpg" alt="南航翔翼项目 · Hover 浮层快捷操作" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-17">
+    <div class="slide-label">
+      <span class="slide-number">17 / 21</span>
+      <span class="slide-title">周视图颜色编码</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/17.jpg" alt="南航翔翼项目 · 周视图颜色编码" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-18">
+    <div class="slide-label">
+      <span class="slide-number">18 / 21</span>
+      <span class="slide-title">历史记录相互高亮</span>
+    </div>
+    <div class="page-visual">
+      <div class="hybrid-visual">
+        <img class="crop-top" src="images/nanhang/18-top.jpg" alt="南航翔翼项目 · 历史记录相互高亮">
+        <div class="gif-stage s18">
+          <img src="images/nanhang/gifs/slide18-demo.gif" alt="历史记录相互高亮动态演示">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-19">
+    <div class="slide-label">
+      <span class="slide-number">19 / 21</span>
+      <span class="slide-title">验证</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/19.jpg" alt="南航翔翼项目 · 验证" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-20">
+    <div class="slide-label">
+      <span class="slide-number">20 / 21</span>
+      <span class="slide-title">上线节奏</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/20.jpg" alt="南航翔翼项目 · 上线节奏" loading="lazy">
+    </div>
+  </section>
+
+  <section class="page" id="page-21">
+    <div class="slide-label">
+      <span class="slide-number">21 / 21</span>
+      <span class="slide-title">我学到的</span>
+    </div>
+    <div class="page-visual">
+      <img src="images/nanhang/21.jpg" alt="南航翔翼项目 · 我学到的" loading="lazy">
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const deck = document.getElementById('deck');
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const dashes = Array.from(document.querySelectorAll('.dash'));
+  const counterCurrent = document.getElementById('counterCurrent');
+
+  function setActive(index) {
+    dashes.forEach((d, i) => d.classList.toggle('active', i === index));
+    counterCurrent.textContent = index + 1;
+  }
+
+  dashes.forEach((dash, i) => {
+    dash.addEventListener('click', () => {
+      pages[i].scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Hover / focus preview card
+  const previewCard = document.getElementById('previewCard');
+  const pvIndex = document.getElementById('pvIndex');
+  const pvTitle = document.getElementById('pvTitle');
+  const pvDesc = document.getElementById('pvDesc');
+
+  function showPreview(dash) {
+    const rect = dash.getBoundingClientRect();
+    pvIndex.textContent = dash.dataset.index;
+    pvTitle.textContent = dash.dataset.title;
+    pvDesc.textContent = dash.dataset.desc;
+    previewCard.style.top = (rect.top + rect.height / 2) + 'px';
+    previewCard.classList.add('visible');
+  }
+
+  function hidePreview() {
+    previewCard.classList.remove('visible');
+  }
+
+  dashes.forEach((dash) => {
+    dash.addEventListener('mouseenter', () => showPreview(dash));
+    dash.addEventListener('mouseleave', hidePreview);
+    dash.addEventListener('focus', () => showPreview(dash));
+    dash.addEventListener('blur', hidePreview);
+  });
+
+  document.getElementById('navUp').addEventListener('click', () => {
+    const current = dashes.findIndex(d => d.classList.contains('active'));
+    const prev = Math.max(0, current - 1);
+    pages[prev].scrollIntoView({ behavior: 'smooth' });
+  });
+
+  document.getElementById('navDown').addEventListener('click', () => {
+    const current = dashes.findIndex(d => d.classList.contains('active'));
+    const next = Math.min(pages.length - 1, current + 1);
+    pages[next].scrollIntoView({ behavior: 'smooth' });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const index = pages.indexOf(entry.target);
+        setActive(index);
+      }
+    });
+  }, { root: deck, threshold: 0.6 });
+
+  pages.forEach(p => observer.observe(p));
+
+  document.addEventListener('keydown', (e) => {
+    const current = dashes.findIndex(d => d.classList.contains('active'));
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+      e.preventDefault();
+      const next = Math.min(pages.length - 1, current + 1);
+      pages[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      const prev = Math.max(0, current - 1);
+      pages[prev].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'r' || e.key === 'R') {
+      pages[0].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    pages[0].scrollIntoView({ behavior: 'smooth' });
+  });
+
+  setActive(0);
+</script>
+
+</body>
+</html>
