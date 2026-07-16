@@ -29,7 +29,7 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html { -webkit-font-smoothing: antialiased; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
 
   body {
     background: var(--bg);
@@ -253,7 +253,7 @@
 
   .hero h1 {
     font-family: var(--font-display);
-    font-size: clamp(26px, 3.2vw, 36px);
+    font-size: clamp(18px, 2.1vw, 24px);
     font-weight: 700;
     letter-spacing: -0.01em;
     line-height: 1.3;
@@ -281,7 +281,7 @@
   .tags {
     display: flex;
     gap: 10px;
-    margin-top: 24px;
+    margin-top: 12px;
     flex-wrap: wrap;
   }
 
@@ -324,7 +324,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 32px;
+    margin-top: 16px;
   }
 
   .cta {
@@ -405,8 +405,16 @@
   /* ---------- Section: Team / Education ---------- */
 
   .section {
-    margin-top: 80px;
+    margin-top: 32px;
     max-width: 100%;
+  }
+
+  .section[aria-labelledby="team-heading"] {
+    margin-top: 72px;
+  }
+
+  .section[aria-labelledby="work-heading"] {
+    margin-top: 56px;
   }
 
   .section-eyebrow {
@@ -423,7 +431,7 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 24px;
-    padding: 18px 0;
+    padding: 6px 0;
     border-top: 1px solid var(--border-soft);
   }
 
@@ -434,7 +442,7 @@
     flex-wrap: wrap;
     align-items: baseline;
     gap: 4px 10px;
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .row-org {
@@ -454,7 +462,7 @@
 
   .row-year {
     flex-shrink: 0;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-tertiary);
     font-variant-numeric: tabular-nums;
   }
@@ -484,12 +492,12 @@
 
   .case-lead {
     font-family: var(--font-display);
-    font-size: clamp(19px, 2.2vw, 24px);
+    font-size: clamp(17px, 1.9vw, 20px);
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.4;
     max-width: 640px;
-    margin-top: 28px;
+    margin-top: 0;
   }
 
   .case-title-small {
@@ -504,6 +512,10 @@
     font-size: 0.9em;
     font-weight: 500;
     color: var(--text-tertiary);
+  }
+
+  .case-entry {
+    scroll-margin-top: 32px;
   }
 
   .case-card {
@@ -593,7 +605,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 0;
+    margin-top: 10px;
     max-width: 420px;
   }
 
@@ -788,14 +800,14 @@
       <div class="section-eyebrow" id="work-heading">Selected Work 精选项目</div>
 
       <div class="case-list">
-        <div class="case-entry">
+        <div class="case-entry" id="project-nanhang">
+          <p class="case-lead">重构十年未更新的排班系统</p>
           <div class="case-tags">
             <span class="case-tag">B端系统设计</span>
             <span class="case-tag">复杂信息架构</span>
             <span class="case-tag">双模态交互</span>
             <span class="case-tag">可用性测试</span>
           </div>
-          <p class="case-lead">重构十年未更新的排班系统</p>
           <div class="case-title-small">南航翔翼<span class="cn-inline">Southern Airlines Digital Transformation</span></div>
           <div class="case-caption">
             <span>AInnovation Technology Co <span class="cn-inline">创新奇智</span></span>
@@ -804,28 +816,28 @@
             <span class="case-caption-sep">/</span>
             <span>Design for <span class="cn-inline">设计作品</span></span>
           </div>
-          <a class="case-card nh" href="nanhang.html" id="project-nanhang">
+          <a class="case-card nh" href="nanhang.html">
             <div class="case-visual">
               <img src="images/case-nanhang.jpg" alt="南航翔翼产品截图" loading="lazy">
             </div>
           </a>
         </div>
 
-        <div class="case-entry">
+        <div class="case-entry" id="project-yueji">
+          <p class="case-lead">微信读书 Redesign：用 AI 沉淀思维资产，把"读过"转化为"留存"与付费</p>
           <div class="case-tags">
             <span class="case-tag">AI产品设计</span>
             <span class="case-tag">概念项目</span>
             <span class="case-tag">商业逻辑倒推</span>
             <span class="case-tag">Vibe Coding</span>
           </div>
-          <p class="case-lead">AI 在合上书之后才出现,把划线沉淀成跨书思维档案</p>
           <div class="case-title-small">阅迹<span class="cn-inline">Yuè Jì — AI Reading Companion</span></div>
           <div class="case-caption">
             <span>Designer (me) <span class="cn-inline">设计师(我)</span></span>
             <span class="case-caption-sep">/</span>
             <span>Independent Project <span class="cn-inline">独立项目</span></span>
           </div>
-          <a class="case-card yj" href="yueji.html" id="project-yueji">
+          <a class="case-card yj" href="yueji.html">
             <div class="case-visual">
               <img src="images/case-yueji.jpg" alt="阅迹产品截图" loading="lazy">
             </div>
