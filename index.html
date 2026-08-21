@@ -160,7 +160,7 @@
     flex-shrink: 0;
   }
 
-  .project-swatch.nh, .project-swatch.yj { background: linear-gradient(135deg, #2f6fd6, #4a92ff); }
+  .project-swatch.nh, .project-swatch.yj, .project-swatch.nb, .project-swatch.gl { background: linear-gradient(135deg, #2f6fd6, #4a92ff); }
 
   .project-name {
     font-weight: 500;
@@ -531,7 +531,7 @@
     box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
   }
 
-  .case-card.nh, .case-card.yj { background: transparent; }
+  .case-card.nh, .case-card.yj, .case-card.nb, .case-card.gl { background: transparent; }
 
   .case-visual {
     position: relative;
@@ -693,6 +693,22 @@
       <a class="sb-link" href="#top">About me <span class="cn-inline">关于我</span></a>
     </nav>
 
+    <div class="sb-section-label">Games 游戏</div>
+    <nav aria-label="Games">
+      <a class="project-item" href="#project-genshin-lock">
+        <span>
+          <div class="project-name">自动锁定重设计<span class="cn-inline">Lock Redesign</span></div>
+          <div class="project-sub">游戏UX · 完整案例</div>
+        </span>
+      </a>
+      <a class="project-item" href="#project-numbie">
+        <span>
+          <div class="project-name">Numbie</div>
+          <div class="project-sub">计算障碍儿童学习工具</div>
+        </span>
+      </a>
+    </nav>
+
     <div class="sb-section-label">Projects 项目</div>
     <nav aria-label="Projects">
       <a class="project-item" href="#project-nanhang">
@@ -800,6 +816,27 @@
       <div class="section-eyebrow" id="work-heading">Selected Work 精选项目</div>
 
       <div class="case-list">
+        <div class="case-entry" id="project-genshin-lock">
+          <p class="case-lead">重新设计</p>
+          <div class="case-tags">
+            <span class="case-tag">游戏UX设计</span>
+            <span class="case-tag">系统可预测性</span>
+            <span class="case-tag">竞品分析</span>
+            <span class="case-tag">交互决策拆解</span>
+          </div>
+          <div class="case-title-small">自动锁定体验重设计<span class="cn-inline">Genshin Impact — Auto-Lock Redesign</span></div>
+          <div class="case-caption">
+            <span>Designer (me) <span class="cn-inline">设计师(我)</span></span>
+            <span class="case-caption-sep">/</span>
+            <span>Independent Project <span class="cn-inline">独立项目</span></span>
+          </div>
+          <a class="case-card gl" href="genshin-lock-redesign.html">
+            <div class="case-visual">
+              <img src="images/case-genshin-lock.jpg" alt="圣遗物自动锁定重设计界面截图" loading="lazy">
+            </div>
+          </a>
+        </div>
+
         <div class="case-entry" id="project-nanhang">
           <p class="case-lead">重构十年未更新的排班系统</p>
           <div class="case-tags">
@@ -840,6 +877,27 @@
           <a class="case-card yj" href="yueji.html">
             <div class="case-visual">
               <img src="images/case-yueji.jpg" alt="阅迹产品截图" loading="lazy">
+            </div>
+          </a>
+        </div>
+
+        <div class="case-entry" id="project-numbie">
+          <p class="case-lead">Numbie:给计算障碍儿童做的多感官学习工具,让抽象数字变成可触摸的具体经验</p>
+          <div class="case-tags">
+            <span class="case-tag">儿童教育设计</span>
+            <span class="case-tag">跨感官交互</span>
+            <span class="case-tag">硬件+软件</span>
+            <span class="case-tag">思辨设计</span>
+          </div>
+          <div class="case-title-small">Numbie<span class="cn-inline">Multisensory Learning for Dyscalculia</span></div>
+          <div class="case-caption">
+            <span>Designer (me) <span class="cn-inline">设计师(我)</span></span>
+            <span class="case-caption-sep">/</span>
+            <span>Academic Project <span class="cn-inline">学术项目</span></span>
+          </div>
+          <a class="case-card nb" href="numbie.html">
+            <div class="case-visual">
+              <img src="images/case-numbie.jpg" alt="Numbie产品实拍照片" loading="lazy">
             </div>
           </a>
         </div>
